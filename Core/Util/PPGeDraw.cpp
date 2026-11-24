@@ -1058,11 +1058,14 @@ static void PPGeDecimateTextImages(int age) {
 	}
 }
 
+AccessPPGeHook g_accessPPGeHook = nullptr;  // [ACCESS]
+
 void PPGeDrawText(std::string_view text, float x, float y, const PPGeStyle &style) {
 	std::string str = PPGeSanitizeText(text);
 	if (str.empty()) {
 		return;
 	}
+	if (g_accessPPGeHook) g_accessPPGeHook(0, str, x, y, 0, 0, &style);  // [ACCESS]
 
 	if (HasTextDrawer()) {
 		PPGeTextDrawerImage im = PPGeGetTextImage(str, style, 480.0f - x, false);
@@ -1110,6 +1113,7 @@ void PPGeDrawTextWrapped(std::string_view text, float x, float y, float wrapWidt
 	if (wrapHeight != 0.0f) {
 		s = StripTrailingWhite(s);
 	}
+	if (g_accessPPGeHook) g_accessPPGeHook(1, s, x, y, wrapWidth, wrapHeight, &style);  // [ACCESS]
 
 	int zoom = (PSP_CoreParameter().pixelHeight + 479) / 480;
 	zoom = std::min(zoom, PSP_CoreParameter().renderScaleFactor);
@@ -1228,6 +1232,7 @@ void PPGeDraw4Patch(ImageID atlasImage, float x, float y, float w, float h, u32 
 void PPGeDrawRect(float x1, float y1, float x2, float y2, u32 color) {
 	if (!dlPtr)
 		return;
+	if (g_accessPPGeHook) g_accessPPGeHook(2, std::string_view(), x1, y1, x2, y2, nullptr);  // [ACCESS]
 
 	WriteCmd(GE_CMD_TEXTUREMAPENABLE, 0);
 

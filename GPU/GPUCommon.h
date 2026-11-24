@@ -49,6 +49,11 @@ inline bool IsTrianglePrim(GEPrimitiveType prim) {
 	return prim > GE_PRIM_LINE_STRIP && prim != GE_PRIM_RECTANGLES;
 }
 
+// [ACCESS] Set by the accessibility layer. While set, display lists run in the
+// slow (debugger) loop and this is called for every GE command before it executes.
+typedef void (*AccessGeHook)(u32 pc, u32 op);
+extern AccessGeHook g_accessGeHook;
+
 class GPUCommon : public GPUDebugInterface {
 public:
 	// The constructor might run on the loader thread.

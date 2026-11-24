@@ -77,6 +77,12 @@ struct HLEFunction {
 	u32 stackBytesToClear;
 };
 
+// [ACCESS] Set by the accessibility layer. Called around every HLE function a
+// game calls: with after=false just before it runs (arguments still in a0...),
+// and with after=true once it has returned.
+typedef void (*AccessSyscallHook)(const HLEFunction *info, bool after);
+extern AccessSyscallHook g_accessSyscallHook;
+
 struct HLEModule {
 	std::string_view name;
 	int numFunctions;

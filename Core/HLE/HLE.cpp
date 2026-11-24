@@ -75,6 +75,7 @@ static const char *hleAfterSyscallReschedReason;
 // Keep track of syscalls in flight. Note that they can call each other! But they'll have to use hleCall<>.
 static const HLEFunction *g_stack[MAX_SYSCALL_RECURSION];
 u32 g_syscallPC;
+AccessSyscallHook g_accessSyscallHook = nullptr;  // [ACCESS]
 int g_stackSize;
 
 static int idleOp;
@@ -860,7 +861,9 @@ static void CallSyscallWithFlags(const HLEFunction *info) {
 	} else if ((flags & HLE_NOT_IN_INTERRUPT) && __IsInInterrupt()) {
 		RETURN(hleLogDebug(Log::HLE, SCE_KERNEL_ERROR_ILLEGAL_CONTEXT, "in interrupt"));
 	} else {
+		if (g_accessSyscallHook) g_accessSyscallHook(info, false);  // [ACCESS]
 		info->func();
+		if (g_accessSyscallHook) g_accessSyscallHook(info, true);  // [ACCESS]
 	}
 
 	// Now, g_stackSize should be back to 0. Enable this for "pedantic mode", will find a lot of problems.
@@ -886,7 +889,9 @@ static void CallSyscallWithoutFlags(const HLEFunction *info) {
 	}
 	g_syscallPC = currentMIPS->pc;
 
+	if (g_accessSyscallHook) g_accessSyscallHook(info, false);  // [ACCESS]
 	info->func();
+	if (g_accessSyscallHook) g_accessSyscallHook(info, true);  // [ACCESS]
 
 	// Now, g_stackSize should be back to 0. Enable this for "pedantic mode", will find a lot of problems.
 	// Check g_stack[0] in the debugger.

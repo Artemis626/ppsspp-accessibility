@@ -38,6 +38,8 @@
 
 bool __KernelIsDispatchEnabled();
 
+AccessGeHook g_accessGeHook = nullptr;  // [ACCESS]
+
 void GPUCommon::Flush() {
 	drawEngineCommon_->Flush();
 }
@@ -634,6 +636,7 @@ bool GPUCommon::SlowRunLoop(DisplayList &list) {
 
 		recorder_.NotifyCommand(list.pc);
 		u32 op = Memory::ReadUnchecked_U32(list.pc);
+		if (g_accessGeHook) g_accessGeHook(list.pc, op);  // [ACCESS]
 		u32 cmd = op >> 24;
 
 		u32 diff = op ^ gstate.cmdmem[cmd];
@@ -788,7 +791,7 @@ DLResult GPUCommon::ProcessDLQueue() {
 
 			// To enable breakpoints, we don't do fast matrix loads while debugger active.
 			debugRecording_ = recorder_.IsActive();
-			useFastRunLoop_ = !(dumpThisFrame_ || debugRecording_ || NeedsSlowInterpreter() || breakpoints_.HasBreakpoints());
+			useFastRunLoop_ = !(dumpThisFrame_ || debugRecording_ || NeedsSlowInterpreter() || breakpoints_.HasBreakpoints() || g_accessGeHook);  // [ACCESS] last term
 		} else {
 			resumingFromDebugBreak_ = false;
 			// The bottom part of the gpuState loop below, that wasn't executed

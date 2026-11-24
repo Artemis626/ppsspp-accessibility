@@ -586,6 +586,7 @@ public:
 	void SetImageIDFunc(std::function<ImageID()> func) {
 		imageFunc_ = func;
 	}
+	ImageID GetImageID() const { return imageFunc_ ? imageFunc_() : imageID_; }  // [ACCESS] for spoken icon-only buttons
 	void SetIgnoreText(bool ignore) {
 		ignoreText_ = ignore;
 	}

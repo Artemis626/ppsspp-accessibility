@@ -87,6 +87,12 @@ struct PPGeImageStyle {
 	uint32_t color = 0xFFFFFFFF;
 };
 
+// [ACCESS] Set by the accessibility layer. Called for everything the system
+// dialogs draw as text (kind 0: x, y = anchor; kind 1: wrapped, x2 = wrap width)
+// and for plain rectangles such as selection boxes (kind 2: x, y, x2, y2 = corners).
+typedef void (*AccessPPGeHook)(int kind, std::string_view text, float x, float y, float x2, float y2, const PPGeStyle *style);
+extern AccessPPGeHook g_accessPPGeHook;
+
 // Get the metrics of the bounding box of the text without changing the buffer or state.
 void PPGeMeasureText(float *w, float *h, std::string_view text, float scale, int WrapType = PPGE_LINE_NONE, int wrapWidth = 0);
 

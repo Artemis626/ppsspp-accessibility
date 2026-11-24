@@ -31,6 +31,7 @@
 #include "Core/CoreTiming.h"
 
 BreakpointManager g_breakpoints;
+BreakScriptHook g_breakScriptHook = nullptr;  // [ACCESS]
 
 void MemCheck::Log(u32 addr, bool write, int size, u32 pc, const char *reason) const {
 	if (result & BREAK_ACTION_LOG) {
@@ -65,6 +66,9 @@ BreakAction MemCheck::Action(u32 addr, bool write, int size, u32 pc, const char 
 	Log(addr, write, size, pc, reason);
 	if (result & BREAK_ACTION_PAUSE) {
 		Core_Break(BreakReason::MemoryBreakpoint, start);
+	}
+	if ((result & BREAK_ACTION_SCRIPT) && g_breakScriptHook) {  // [ACCESS]
+		g_breakScriptHook(write ? 2 : 1, addr, size, pc, reason);
 	}
 	return result;
 }
@@ -313,7 +317,12 @@ BreakAction BreakpointManager::ExecBreakPoint(u32 addr) {
 			Core_Break(BreakReason::CpuBreakpoint, info.addr);
 		}
 
-		return info.result;
+		// [ACCESS] Copy first: the hook may add breakpoints, which can reallocate breakPoints_ and invalidate info.
+		BreakAction result = info.result;
+		if ((result & BREAK_ACTION_SCRIPT) && g_breakScriptHook) {
+			g_breakScriptHook(0, addr, 4, addr, "CPU");
+		}
+		return result;
 	}
 
 	return BREAK_ACTION_IGNORE;

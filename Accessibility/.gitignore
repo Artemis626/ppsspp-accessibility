@@ -1,0 +1,3 @@
+# The root .gitignore ignores all *.dll files. We ship the unmodified NVDA
+# Controller Client DLL (LGPL 2.1) with the source, so un-ignore it here.
+!ext/nvda/x64/*.dll

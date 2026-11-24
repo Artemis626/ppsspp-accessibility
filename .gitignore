@@ -151,3 +151,18 @@ RAPrefs_PPSSPP.cfg
 cmake-build-*/
 
 /.vscode/
+
+# [ACCESS] Game data must never enter this repository: disc images, save
+# states, saves, and Discovery recordings (which hold a copy of game memory).
+# They live outside the repository, in ../harness-data and ../builds.
+*.iso
+*.cso
+*.chd
+*.pbp
+*.ppst
+harness-data/
+memstick/
+PPSSPP_STATE/
+recordings/
+memory-*.bin
+sprites.txt

@@ -28,7 +28,15 @@ enum BreakAction : u32 {
 	BREAK_ACTION_IGNORE = 0x00,
 	BREAK_ACTION_LOG = 0x01,
 	BREAK_ACTION_PAUSE = 0x02,
+	BREAK_ACTION_SCRIPT = 0x04,  // [ACCESS] call g_breakScriptHook (accessibility scripting), never pauses
 };
+
+// [ACCESS] Set by the accessibility scripting layer. Called for breakpoints and
+// memchecks whose result includes BREAK_ACTION_SCRIPT. kind: 0 = execute, 1 = read, 2 = write.
+// For CPU accesses it runs before the instruction executes; reason is "CPU" or
+// "interpret" for those, otherwise the name of the HLE function that touched memory.
+typedef void (*BreakScriptHook)(int kind, u32 addr, int size, u32 pc, const char *reason);
+extern BreakScriptHook g_breakScriptHook;
 
 static inline BreakAction &operator |= (BreakAction &lhs, const BreakAction &rhs) {
 	lhs = BreakAction(lhs | rhs);

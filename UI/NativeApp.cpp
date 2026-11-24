@@ -163,6 +163,12 @@
 
 #include <Core/HLE/Plugins.h>
 
+// [ACCESS] Accessibility scripting layer (Windows desktop only for now).
+#if PPSSPP_PLATFORM(WINDOWS) && !PPSSPP_PLATFORM(UWP)
+#define PPSSPP_ACCESS 1
+#include "Accessibility/AccessHost.h"
+#endif
+
 bool HandleGlobalMessage(UIMessage message, const std::string &value);
 static void ProcessWheelRelease(InputKeyCode keyCode, double now, bool keyPress);
 void SaveFrameDump();
@@ -758,6 +764,10 @@ void NativeInit(int argc, const char *argv[], const char *savegame_dir, const ch
 	// Initialize retro achievements runtime.
 	Achievements::Initialize();
 
+#ifdef PPSSPP_ACCESS
+	Access::Init();  // [ACCESS]
+#endif
+
 	// Must be done restarting by now.
 	restarting = false;
 }
@@ -1041,6 +1051,10 @@ void NativeFrame(GraphicsContext *graphicsContext) {
 
 	g_screenManager->update();
 
+#ifdef PPSSPP_ACCESS
+	Access::Frame();  // [ACCESS] after the UI update, so menu focus is current.
+#endif
+
 	// Do this after g_screenManager.update() so we can receive setting changes before rendering.
 	{
 		std::vector<PendingMessage> toProcess;
@@ -1287,6 +1301,11 @@ static void ProcessWheelRelease(InputKeyCode keyCode, double now, bool keyPress)
 }
 
 bool NativeKey(const KeyInput &key) {
+#ifdef PPSSPP_ACCESS
+	if (Access::OnKey(key)) {  // [ACCESS] accessibility hotkeys see keys first and may consume them
+		return true;
+	}
+#endif
 	double now = time_now_d();
 
 	// VR actions
@@ -1473,6 +1492,10 @@ bool NativeIsRestarting() {
 
 void NativeShutdown() {
 	INFO_LOG(Log::System, "NativeShutdown begin");
+
+#ifdef PPSSPP_ACCESS
+	Access::Shutdown();  // [ACCESS]
+#endif
 
 	Achievements::Shutdown();
 

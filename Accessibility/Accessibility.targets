@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Imported by Windows/PPSSPP.vcxproj (one [ACCESS] line). Keeps our build
+  steps in our own folder so the upstream project file barely changes.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Put the NVDA Controller Client DLL beside the exe after every x64 build. -->
+  <Target Name="AccessCopyNvdaClient" AfterTargets="Build" Condition="'$(Platform)'=='x64'">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)ext\nvda\x64\nvdaControllerClient.dll"
+          DestinationFolder="$(OutDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+</Project>

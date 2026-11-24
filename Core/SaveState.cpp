@@ -75,6 +75,7 @@ namespace SaveState {
 double g_lastSaveTime = -1.0;
 
 static bool needsProcess = false;
+AccessStateHook g_accessStateHook = nullptr;  // [ACCESS]
 static bool needsRestart = false;
 static std::mutex mutex;
 static bool hasLoadedState = false;
@@ -832,6 +833,7 @@ int g_screenshotFailures;
 					callbackResult = TriggerLoadWarnings(callbackMessage);
 					hasLoadedState = true;
 					Core_ResetException();
+					if (g_accessStateHook) g_accessStateHook(op.filename, true);  // [ACCESS]
 
 					if (!slot_prefix.empty())
 						callbackMessage = slot_prefix + callbackMessage;
@@ -872,6 +874,7 @@ int g_screenshotFailures;
 				if (result == CChunkFileReader::ERROR_NONE) {
 					callbackMessage = slot_prefix + std::string(sc->T("Saved State"));
 					callbackResult = Status::SUCCESS;
+					if (g_accessStateHook) g_accessStateHook(op.filename, false);  // [ACCESS]
 #ifndef MOBILE_DEVICE
 					if (g_Config.bSaveLoadResetsAVdumping) {
 						if (g_Config.bDumpFrames) {
@@ -915,6 +918,7 @@ int g_screenshotFailures;
 					callbackResult = Status::SUCCESS;
 					hasLoadedState = true;
 					Core_ResetException();
+					if (g_accessStateHook) g_accessStateHook(Path(), true);  // [ACCESS] rewind: memory replaced, no file
 				} else if (result == CChunkFileReader::ERROR_BROKEN_STATE) {
 					// Cripes.  Good news is, we might have more.  Let's try those too, better than a reset.
 					if (HandleLoadFailure(true)) {
@@ -923,6 +927,7 @@ int g_screenshotFailures;
 						callbackResult = Status::SUCCESS;
 						hasLoadedState = true;
 						Core_ResetException();
+						if (g_accessStateHook) g_accessStateHook(Path(), true);  // [ACCESS] rewind
 					} else {
 						callbackMessage = std::string(i18nLoadFailure) + ": " + errorString;
 						callbackResult = Status::FAILURE;

@@ -38,6 +38,11 @@ namespace SaveState {
 
 	static const char * const SCREENSHOT_EXTENSION = "jpg";
 
+	// [ACCESS] Set by the accessibility layer. Called after a state file was
+	// loaded (loaded=true) or saved (loaded=false) successfully.
+	typedef void (*AccessStateHook)(const Path &filename, bool loaded);
+	extern AccessStateHook g_accessStateHook;
+
 	void Init();
 	void Shutdown();
 
