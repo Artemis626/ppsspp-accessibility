@@ -6,7 +6,9 @@
 - **Who does what:** the user handles design, testing and memory research. Claude handles code and architecture.
 - **Every answer:** structure it with MD headings, and explain the reasoning behind decisions and each step, not just the steps.
 - **Phases:** work in phases and **stop after each phase** for the user's testing. Don't start the next phase without their go-ahead.
-- **Git:** the repository is **private**: `Artemis626/ppsspp-accessibility`, remote `origin`, branch `access/main`. The `upstream` remote (hrydgard/ppsspp) is fetch-only; its push URL is deliberately disabled. Nothing may be made public until the user decides. Push to `origin` only when asked.
+- **Git:** the repository is **public** since 2026-11-24: `Artemis626/ppsspp-accessibility`, remote `origin`, branch `access/main`. Push to `origin` only when asked, and never put game text, game data or personal details in a commit. Commits use the GitHub noreply address (`259532419+Artemis626@users.noreply.github.com`).
+  - The old history (with game text and personal paths) is in the **private** repo `Artemis626/ppsspp-accessibility-private` (remote `private`) and the local branch `private-history`. Never push either to `origin`.
+  - The `upstream` remote (hrydgard/ppsspp) is fetch-only; its push URL is deliberately disabled.
 
 ## The project
 
