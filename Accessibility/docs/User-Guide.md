@@ -52,12 +52,46 @@ If automatic reading is too talkative (in a battle, numbers can be), press Ctrl+
 
 A script makes one game speak far better than the emulator can alone, because its author told it what matters.
 
+**This emulator comes with no scripts.** Every script you use will have been written by someone else, so read the next section before you install one.
+
+### Before you install a script: read this
+
+**A script is a small program.** Treat it exactly as you would any program you download: it does whatever its author wrote, good or bad.
+
+#### What the emulator protects you from
+
+Every script runs in a sandbox. Whatever its author wrote, a script cannot:
+
+- start other programs;
+- delete or rename files;
+- read or write files outside its own folders;
+- change its own code or any other script;
+- load extra program files (DLLs).
+
+#### What it cannot protect you from
+
+- **Your game progress.** A script can read and change the game's memory; that is how it works. A careless or hostile script can spoil a save.
+- **Being misled.** A script decides what is spoken. A bad one can say wrong things, stay silent, or speak so much the game is unplayable.
+- **Hangs and crashes.** A script can freeze or close the emulator. That costs unsaved progress, not your computer's safety.
+- **Flaws nobody has found yet.** The sandbox has been tested, but not by security experts. A skilled attacker might find a way past it.
+- **Anything you install yourself outside the scripts folder.** The sandbox only covers `.lua` scripts.
+
+#### Rules that keep you safe
+
+1. **Only install scripts from sources you trust:** a person you know, or a community where scripts are shared openly and other players have used them. Be wary of a script sent to you privately by a stranger.
+2. **Review the code if you can,** or ask someone you trust to look at it. A script is plain text: open it in Notepad. It should read like a list of game addresses and things to say. Long blocks of gibberish, or text passed to `load` that you cannot read, are a warning sign.
+3. **A script is one `.lua` file, or a folder of them.** If a "script" comes as an `.exe`, an installer, a `.dll`, or asks you to replace the emulator's own files, do not use it. Those are not scripts, and the sandbox cannot protect you from them.
+4. **Back up your saves first:** copy the folder `memstick/PSP/SAVEDATA` somewhere safe before trying a new script, and again now and then.
+5. **If something seems wrong, remove the script.** Delete its `.lua` file (or folder) from `scripts`, and its data folder from `scripts/data`. Everything is back as before.
+
+### Installing a script
+
 1. Find the game's identifier, for example `ULES01500`. It is on the "Game started" line of `accessibility/logs/access.log`, and it is the name of the game's profile file.
 2. Put the script in the `scripts` folder as `<identifier>.lua`, for example `scripts/ULES01500.lua`.
-3. Start the game. The script loads by itself.
+3. Start the game. The script loads by itself, and the emulator says "Script ULES01500.lua loaded".
 4. Press Ctrl+Shift+H to hear the keys the script added.
 
-A script cannot start programs, delete files or reach files outside its own folder: the emulator takes those abilities away from every script. It can still read and change the game's memory, which may spoil a save, so keep a backup of saves you care about and take scripts from people you trust.
+A script keeps any files it makes (notes, settings) in its own data folder, `scripts/data/<identifier>`.
 
 ### What the emulator remembers
 
@@ -144,7 +178,9 @@ end, HP, "hpChanged", 2)
 
 Press Ctrl+Shift+F12 to reload the script after each edit; you do not need to restart the game.
 
-A script can keep its own files (notes, settings) in its folder: `io.open("notes.txt", "w")` opens `notes.txt` beside the script. Files elsewhere, starting programs and deleting files are not allowed; the technical README lists exactly what is taken away, under "Script sandbox".
+A script can keep its own files (notes, settings) in its data folder, `scripts/data/<identifier>/`: `io.open("notes.txt", "w")` creates `notes.txt` there, and `emu.getdatadir()` gives the folder's full path. A script can read files beside itself but cannot change them. Files elsewhere, starting programs and deleting files are not allowed; the technical README lists exactly what is taken away, under "Script sandbox".
+
+If you share your script, remember that other players should treat it with the caution described in "Before you install a script". Keep it readable: plain code with comments that say what each part does helps them trust it.
 
 To speak the selected menu item yourself, instead of relying on automatic reading:
 

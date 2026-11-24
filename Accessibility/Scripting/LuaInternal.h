@@ -64,9 +64,13 @@ void RegisterAudioApi(lua_State *L);   // audio
 void RegisterDiscoveryApi(lua_State *L);  // text, discover
 
 // Takes away what could harm the computer (programs, file deletion, native
-// code, bytecode, debug) and limits file access to the script's folder.
-// Run after luaL_openlibs and the package path. See Sandbox.cpp.
-bool ApplySandbox(lua_State *L, const std::string &scriptDir, std::string *error);
+// code, bytecode, debug), allows writing only in the script's data folder and
+// reading only there and in the script's folder. Run after luaL_openlibs and
+// the package path. See Sandbox.cpp.
+bool ApplySandbox(lua_State *L, const std::string &scriptDir, const std::string &dataDir, const std::string &libDir, std::string *error);
+
+// The running script's data folder, scripts/data/<name> (see Sandbox.cpp).
+std::string ScriptDataDirectory();
 
 // ---- Per-frame and per-host-frame work ----
 void RunFrameCallbacks(lua_State *L);   // Api_Event.cpp: event.onframeend, on each game frame

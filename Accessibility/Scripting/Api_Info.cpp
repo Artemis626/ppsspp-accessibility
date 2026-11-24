@@ -66,11 +66,22 @@ int L_VblankCount(lua_State *L) {
 	return 1;
 }
 
-// emu.getscriptdir() -> the running script's folder, ending in "/".
-// Lua's io.open uses the emulator's working folder for relative names, so
-// scripts open their own data files with io.open(emu.getscriptdir() .. "data.txt").
+// emu.getscriptdir() -> the running script's folder, ending in "/". Scripts
+// may read files there but not write them (see Scripting/Sandbox.cpp).
 int L_GetScriptDir(lua_State *L) {
 	std::string dir = ScriptDirectory();
+	if (!dir.empty() && dir.back() != '/' && dir.back() != '\\') {
+		dir += '/';
+	}
+	lua_pushlstring(L, dir.data(), dir.size());
+	return 1;
+}
+
+// emu.getdatadir() -> the running script's data folder (scripts/data/<name>/),
+// ending in "/": the only place a script may write files. A relative name
+// given to io.open for writing lands there.
+int L_GetDataDir(lua_State *L) {
+	std::string dir = ScriptDataDirectory();
 	if (!dir.empty() && dir.back() != '/' && dir.back() != '\\') {
 		dir += '/';
 	}
@@ -201,6 +212,7 @@ void RegisterInfoApi(lua_State *L) {
 		{ "vblankcount", &L_VblankCount },
 		{ "frameadvance", &L_FrameAdvance },
 		{ "getscriptdir", &L_GetScriptDir },
+		{ "getdatadir", &L_GetDataDir },
 		{ "getregister", &L_GetRegister },
 		{ "setregister", &L_SetRegister },
 		{ nullptr, nullptr },

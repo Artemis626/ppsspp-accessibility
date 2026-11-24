@@ -153,6 +153,7 @@ They boot `pspautotests/demos/displayWait.prx`, a small PSP test program, and re
 ```text
 scripts/<GAMEID>.lua  or  scripts/<GAMEID>/main.lua   loaded automatically for that game
 scripts/lib/                                          shared modules for require()
+scripts/data/<GAMEID>/                                each script's own files: the only place it may write
 accessibility/hotkeys.ini                             all hotkeys (created on first start)
 accessibility/logs/access.log                         script output, errors, everything spoken
 accessibility/profiles/<GAMEID>.ini                   what the Discovery layer learned about that game (see docs/User-Guide.md)
@@ -221,7 +222,8 @@ Each `event.on*` returns an id:
 - `emu.frameadvance()` pauses the main body until the next frame, for a BizHawk/DeSmuME `while true do ... end` loop.
 - `emu.framecount()` counts game frames; `emu.vblankcount()` is a steady 60-per-second clock.
 - `emu.getregister(name)` and `emu.setregister(name, v)` cover a0, v0, sp, ra, r0 to r31, f0 to f31, hi and lo; `pc` can be read but not written.
-- `emu.getscriptdir()` returns the running script's folder.
+- `emu.getscriptdir()` returns the running script's folder (readable, not writable).
+- `emu.getdatadir()` returns the running script's data folder, `scripts/data/<name>/`: the only place it may write files.
 
 ### Game
 
@@ -263,9 +265,12 @@ Each `event.on*` returns an id:
 Players are told to use scripts written by other people, so a script must not be able to harm the computer (`Scripting/Sandbox.cpp`, since 2026-11-24).
 
 - **Taken away:** `os.execute`, `io.popen`, `os.remove`, `os.rename`, `os.exit`, `os.getenv`, `os.tmpname`, `os.setlocale`; `package.loadlib` and native C modules; precompiled Lua (bytecode); the `debug` library except `debug.traceback`.
-- **Limited:** `io.open`, `io.lines`, `loadfile` and `dofile` only reach files inside the script's own folder: either a relative name such as `"data/notes.txt"`, or a full path that starts with `emu.getscriptdir()`. Names with a drive, a leading slash or `..` are refused with an error.
+- **Writing:** only in the script's own data folder, `scripts/data/<name>/` (`emu.getdatadir()`), where `<name>` is the game identifier or the script's folder name. A script can never change its own code, another script, `scripts/lib/` or another script's data.
+- **Reading** (`io.open`, `io.lines`, `loadfile`, `dofile`): only in the data folder and the script's own folder. A relative name means the data folder when writing; when reading, the data folder if the file is there, otherwise the script's folder. Full paths must start with `emu.getdatadir()` or `emu.getscriptdir()`. Names with a drive, a leading slash or `..` are refused with an error.
+- **Links:** after Windows follows any folder link (junction) or symbolic link, the real place must still be inside the allowed folder, so a link that arrived inside a downloaded script folder cannot lead out. `require` gets the same check against the script's folder and `scripts/lib/`.
 - **Kept:** everything else in Lua's standard library, including `os.time`, `os.clock` and `os.date`. `require` still finds Lua modules in the script's folder and in `scripts/lib/`.
-- **Test:** run the build with `--script=Accessibility/tests/sandbox_selftest.lua`.
+- **Not covered:** a script can still change game memory (and so spoil a save), say wrong things, or hang or crash the emulator. The sandbox works inside the emulator, not at the operating-system level, and has not had an outside security review. The user guide's "Before you install a script" tells players how to judge a script.
+- **Test:** `powershell -ExecutionPolicy Bypass -File Accessibility/tools/sandbox-test.ps1 -BuildDir ../builds/access-dev` (it also plants a folder link to check the link rule).
 
 ## Error policy
 

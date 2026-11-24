@@ -33,6 +33,17 @@ The Discovery layer never reads pixels and uses no text recognition. It knows wh
 
 This is partial speech, not a finished accessible game. A game becomes properly playable when someone writes a script for it; the tools here are for making that quicker.
 
+## Scripts and safety
+
+**This project ships no game scripts.** Any script you use comes from someone else, and a script is a small program: treat it like any program you download.
+
+- **Only install scripts from sources you trust,** and review the code if you can, or ask someone you trust to. A script is a plain-text `.lua` file.
+- **The emulator limits every script:** it cannot start programs, delete files, load DLLs, or reach files outside its own folders.
+- **It can still change the game's memory,** so back up your saves before trying a new script.
+- **Never accept a "script" that is an `.exe`, an installer or a `.dll`,** or one that asks you to replace the emulator's files.
+
+The [user guide](Accessibility/docs/User-Guide.md) explains how to judge a script, under "Before you install a script".
+
 ## State of the work
 
 - **Scripting platform:** speech, spoken menus, memory access, callbacks, hotkeys, audio cues and controller input are built.

@@ -137,9 +137,9 @@ end
 local data = table.concat(samples)
 local wav = "RIFF" .. u32le(36 + #data) .. "WAVEfmt " .. u32le(16) .. u16le(1) .. u16le(1) ..
   u32le(rate) .. u32le(rate * 2) .. u16le(2) .. u16le(16) .. "data" .. u32le(#data) .. data
-local wavPath = "selftest_beep.wav"  -- audio.play resolves this in the script folder
+local wavPath = emu.getdatadir() .. "selftest_beep.wav"  -- scripts may write only in their data folder
 check("emu.getscriptdir ends with /", emu.getscriptdir():sub(-1) == "/", emu.getscriptdir())
-local f = io.open(emu.getscriptdir() .. wavPath, "wb")
+local f = io.open(wavPath, "wb")
 if f then f:write(wav); f:close() end
 local h = audio.play(wavPath, { volume = 0.3, pan = 0.8 })
 check("audio.play a WAV file", type(h) == "number", h)

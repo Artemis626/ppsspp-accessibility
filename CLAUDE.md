@@ -35,7 +35,7 @@ Our code lives in `Accessibility/`; upstream files are touched as little as poss
 - **Discovery, built and waiting for the user's test:** the selected item (`Discovery/Core/Selection.*`) and the per-game profile (`Discovery/Core/Profile.cpp`, `accessibility/profiles/<GAMEID>.ini`).
 - **Known open problems, not built:** letters skipped in dialogue and menus (proposed remedy: for a trusted font, look for a row's unknown letters near where its other rows were found); half-read rows spoken, then spoken again when complete; numbers spoken unasked (recommended: keep them in the report and API only; not approved).
 - **Core tests:** 125 checks, all passing (2026-11-24, with invented text instead of game text).
-- **Script sandbox** (`Scripting/Sandbox.cpp`, 2026-11-24): no programs, file deletion, native code, bytecode or debug library; files only inside the script's folder. Self-test: `--script=Accessibility/tests/sandbox_selftest.lua`.
+- **Script sandbox** (`Scripting/Sandbox.cpp`, 2026-11-24): no programs, file deletion, native code, bytecode or debug library; writing only in the script's data folder (`scripts/data/<name>/`, `emu.getdatadir()`), reading only there and in the script's folder, checked again after links are followed. Test: `tools/sandbox-test.ps1`.
 - **Publishing (2026-11-24):** the public history is one squashed commit on top of `v1.20.4`, authored with the GitHub noreply address. The old private history is kept only in the local branch `private-history`; never push that branch.
 - **Model:** Fable 5.2 built everything up to 2026-11-15; from 2026-11-16 the work continues with Opus. For new cipher rules, write the refusal test case first and replay every recording.
 
@@ -59,6 +59,16 @@ Our code lives in `Accessibility/`; upstream files are touched as little as poss
 - **Game data stays outside git:** save states, ISO paths, reports, pictures, recordings, and harness cases for real games (`../harness-data/cases/`) live in `../harness-data/`. Only cases that need no game are in `Accessibility/harness/cases/`.
 - **No verbatim game text in the repository** (the user's rule since publishing, 2026-11-24): tests use invented lines of the same shape; docs describe a game's lines instead of quoting them. Names and single menu words are allowed.
 - **Recordings** exist in `../harness-data/recordings/<GAMEID>/<state>/`. Use them; do not run the emulator to learn what they already say.
+
+## Safety rules (agreed with the user 2026-11-24, binding)
+
+Scripts had full access to the computer from Phase 2 until 2026-11-24, because the design assumed every script was written by the person running it; that stopped being true when the guide began telling players to use other people's scripts, and nobody re-checked. These rules exist so that does not happen again.
+
+- **At the start of every phase, ask: who writes each input, and who runs it?** Scripts, profiles (`.ini`), hotkey files, recordings and harness cases can all come from other people. Anything that can arrive from someone else is untrusted: the code reading it must survive a damaged or hostile file, and the design note says so.
+- **When a decision rests on an assumption** ("only the modder runs this", "this file is ours"), write the assumption into the design or results document, so a later change can see what it breaks.
+- **Never widen what scripts can do without the sandbox in mind.** A new Lua function that touches files, the network, processes or other programs needs the user's approval, a sandbox self-test check, and a line in the README's "Script sandbox" section.
+- **Run the sandbox test after any change to `Scripting/`:** `tools/sandbox-test.ps1 -BuildDir ../builds/access-dev` (no game, about 15 seconds).
+- **Before any release or other publishing,** go through `Accessibility/docs/Release-Checklist.md`, and suggest the user run `/security-review` (Claude cannot start it).
 
 ## Working lean (agreed with the user 2026-11-12, binding)
 

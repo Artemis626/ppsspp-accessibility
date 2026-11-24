@@ -46,6 +46,7 @@ struct LoadedScript {
 	lua_State *L = nullptr;
 	Path path;
 	std::string displayName;          // e.g. "ULUS10041.lua", used in speech and the log.
+	Path dataDir;                     // scripts/data/<name>: the only folder the script may write to.
 	lua_State *mainThread = nullptr;  // Coroutine running the script's main body.
 	int mainThreadRef = LUA_NOREF;
 	bool mainFinished = true;
@@ -171,6 +172,19 @@ void SetPackagePath(lua_State *L, const Path &scriptDir) {
 	lua_pop(L, 1);
 }
 
+// scripts/data/<name>, where <name> is the script's folder for
+// "<name>/main.lua" and the file name without ".lua" otherwise. Kept apart
+// from the scripts themselves, so a script can never rewrite code.
+Path DataDirectoryFor(const Path &path) {
+	std::string name = path.GetFilename();
+	if (name == "main.lua" && path.CanNavigateUp()) {
+		name = path.NavigateUp().GetFilename();
+	} else if (name.size() > 4 && name.compare(name.size() - 4, 4, ".lua") == 0) {
+		name = name.substr(0, name.size() - 4);
+	}
+	return ScriptsDirectory() / "data" / name;
+}
+
 std::string DisplayNameFor(const Path &path) {
 	// "ULUS10041/main.lua" for folder scripts, "ULUS10041.lua" for single files.
 	std::string file = path.GetFilename();
@@ -202,8 +216,10 @@ bool Load(const Path &path) {
 	// Set before creating the main-body coroutine: new Lua threads copy the hook.
 	lua_sethook(L, &WatchdogHook, LUA_MASKCOUNT, WATCHDOG_INSTRUCTION_STEP);
 	SetPackagePath(L, path.NavigateUp());
+	Path dataDir = DataDirectoryFor(path);
+	File::CreateFullPath(dataDir);
 	std::string sandboxError;
-	if (!ApplySandbox(L, path.NavigateUp().ToString(), &sandboxError)) {
+	if (!ApplySandbox(L, path.NavigateUp().ToString(), dataDir.ToString(), (ScriptsDirectory() / "lib").ToString(), &sandboxError)) {
 		// Never run a script without its sandbox.
 		lua_close(L);
 		ReportError("loading " + displayName + " (the script was not started)", sandboxError);
@@ -214,6 +230,7 @@ bool Load(const Path &path) {
 	g_script.L = L;
 	g_script.path = path;
 	g_script.displayName = displayName;
+	g_script.dataDir = dataDir;
 	ResetMemoryApiState();
 
 	// Order matters: later tables add functions to earlier ones (emu, memory).
@@ -380,6 +397,10 @@ lua_State *ActiveState() {
 
 std::string ScriptDirectory() {
 	return g_script.L ? g_script.path.NavigateUp().ToString() : ScriptsDirectory().ToString();
+}
+
+std::string ScriptDataDirectory() {
+	return g_script.L ? g_script.dataDir.ToString() : std::string();
 }
 
 bool OnEmuThread() {

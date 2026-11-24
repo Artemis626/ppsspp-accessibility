@@ -26,6 +26,7 @@ Everything added lives in the `Accessibility/` folder. The original emulator's f
 - **Sound cues.** Short sounds, with volume and left-right position, for things speech is too slow for.
 - **Controller input.** A script can press the PSP's buttons.
 - **Cheat-code addresses.** A helper turns an address from a CWCheat code into a real memory address.
+- **A sandbox for scripts** (built 2026-11-24). Until then a script could do anything a program can, including deleting files, because the first design assumed every script was written by the person running it. Now a script cannot start programs, delete files, load native code, or write anywhere except its own data folder. It can still change game memory, so players are told to install scripts only from sources they trust and to keep backups of their saves. The project ships no scripts.
 
 ### State
 
